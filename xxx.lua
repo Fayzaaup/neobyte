@@ -1,44 +1,23 @@
---// NeoByte Premium Script
---// Simple Fly + Anti AFK
---// Made by NeoByte
+--// NeoByte Premium (Fly Speed Input)
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "NeoByte | Premium",
    LoadingTitle = "NeoByte Premium",
-   LoadingSubtitle = "by Neo Studio",
-   ConfigurationSaving = {
-      Enabled = false,
-   },
+   LoadingSubtitle = "Speed Input Version",
+   ConfigurationSaving = {Enabled = false},
    KeySystem = false,
 })
 
--- Premium Key Check (Simple Local Key)
-local PremiumKey = "NEOBYTE-2026"
-local UserInputKey = "NEOBYTE-2026" -- Ganti manual kalau mau pakai input box
-
-if UserInputKey ~= PremiumKey then
-   Rayfield:Notify({
-      Title = "Access Denied",
-      Content = "Invalid Premium Key!",
-      Duration = 5,
-   })
-   return
-end
-
-Rayfield:Notify({
-   Title = "Premium Activated",
-   Content = "Welcome to NeoByte Premium!",
-   Duration = 5,
-})
-
 local Player = game.Players.LocalPlayer
-local Character = Player.Character or Player.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-local Humanoid = Character:WaitForChild("Humanoid")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
--- Tab
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local Root = Character:WaitForChild("HumanoidRootPart")
+
 local MainTab = Window:CreateTab("Main", 4483362458)
 
 --========================--
@@ -46,41 +25,92 @@ local MainTab = Window:CreateTab("Main", 4483362458)
 --========================--
 
 local Flying = false
-local FlySpeed = 50
-local BodyVelocity
+local FlySpeed = 1 -- DEFAULT 1
+local BV, BG
+local FlyConnection
+
+local function StartFly()
+   Flying = true
+   
+   BV = Instance.new("BodyVelocity")
+   BV.MaxForce = Vector3.new(9e9,9e9,9e9)
+   BV.Parent = Root
+
+   BG = Instance.new("BodyGyro")
+   BG.MaxTorque = Vector3.new(9e9,9e9,9e9)
+   BG.CFrame = Root.CFrame
+   BG.Parent = Root
+
+   FlyConnection = RunService.RenderStepped:Connect(function()
+      local MoveDir = Vector3.zero
+      
+      if UIS:IsKeyDown(Enum.KeyCode.W) then
+         MoveDir += workspace.CurrentCamera.CFrame.LookVector
+      end
+      if UIS:IsKeyDown(Enum.KeyCode.S) then
+         MoveDir -= workspace.CurrentCamera.CFrame.LookVector
+      end
+      if UIS:IsKeyDown(Enum.KeyCode.A) then
+         MoveDir -= workspace.CurrentCamera.CFrame.RightVector
+      end
+      if UIS:IsKeyDown(Enum.KeyCode.D) then
+         MoveDir += workspace.CurrentCamera.CFrame.RightVector
+      end
+      if UIS:IsKeyDown(Enum.KeyCode.Space) then
+         MoveDir += Vector3.new(0,1,0)
+      end
+      if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
+         MoveDir -= Vector3.new(0,1,0)
+      end
+
+      BV.Velocity = MoveDir * FlySpeed * 50
+      BG.CFrame = workspace.CurrentCamera.CFrame
+   end)
+end
+
+local function StopFly()
+   Flying = false
+   if FlyConnection then
+      FlyConnection:Disconnect()
+      FlyConnection = nil
+   end
+   if BV then BV:Destroy() end
+   if BG then BG:Destroy() end
+end
 
 MainTab:CreateToggle({
    Name = "Enable Fly",
    CurrentValue = false,
    Callback = function(Value)
-      Flying = Value
-      
-      if Flying then
-         BodyVelocity = Instance.new("BodyVelocity")
-         BodyVelocity.MaxForce = Vector3.new(1,1,1) * 1000000
-         BodyVelocity.Parent = HumanoidRootPart
-         
-         game:GetService("RunService").RenderStepped:Connect(function()
-            if Flying and BodyVelocity then
-               BodyVelocity.Velocity = workspace.CurrentCamera.CFrame.LookVector * FlySpeed
-            end
-         end)
+      if Value then
+         StartFly()
       else
-         if BodyVelocity then
-            BodyVelocity:Destroy()
-            BodyVelocity = nil
-         end
+         StopFly()
       end
    end,
 })
 
-MainTab:CreateSlider({
-   Name = "Fly Speed",
-   Range = {10, 200},
-   Increment = 5,
-   CurrentValue = 50,
-   Callback = function(Value)
-      FlySpeed = Value
+-- INPUT SPEED
+MainTab:CreateInput({
+   Name = "Fly Speed (Default 1)",
+   PlaceholderText = "Masukkan angka...",
+   RemoveTextAfterFocusLost = false,
+   Callback = function(Text)
+      local Num = tonumber(Text)
+      if Num and Num > 0 then
+         FlySpeed = Num
+         Rayfield:Notify({
+            Title = "NeoByte",
+            Content = "Fly Speed set ke "..Num,
+            Duration = 3,
+         })
+      else
+         Rayfield:Notify({
+            Title = "Error",
+            Content = "Masukkan angka yang valid!",
+            Duration = 3,
+         })
+      end
    end,
 })
 
@@ -88,38 +118,24 @@ MainTab:CreateSlider({
 --       ANTI AFK         --
 --========================--
 
-MainTab:CreateToggle({
+MainTab:CreateButton({
    Name = "Enable Anti AFK",
-   CurrentValue = false,
-   Callback = function(Value)
-      if Value then
-         local VirtualUser = game:GetService("VirtualUser")
-         Player.Idled:Connect(function()
-            VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-            task.wait(1)
-            VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-         end)
-         
-         Rayfield:Notify({
-            Title = "Anti AFK",
-            Content = "Anti AFK Activated!",
-            Duration = 4,
-         })
-      else
-         Rayfield:Notify({
-            Title = "Anti AFK",
-            Content = "Anti AFK stays until rejoin.",
-            Duration = 4,
-         })
-      end
+   Callback = function()
+      local VirtualUser = game:GetService("VirtualUser")
+      Player.Idled:Connect(function()
+         VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+         task.wait(1)
+         VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+      end)
+      Rayfield:Notify({
+         Title = "NeoByte",
+         Content = "Anti AFK Activated!",
+         Duration = 4,
+      })
    end,
 })
 
---========================--
---        PREMIUM TAG     --
---========================--
-
 MainTab:CreateParagraph({
    Title = "NeoByte Premium",
-   Content = "Exclusive Premium Script\nFly + Anti AFK\nVersion 1.0",
+   Content = "Fly + Anti AFK\nSpeed default 1\nWASD Move | Space Up | Ctrl Down",
 })
