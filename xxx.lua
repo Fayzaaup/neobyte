@@ -1,18 +1,56 @@
---// NeoByte Premium (Fly Speed Input)
+--// ===============================
+//  NeoByte Ultimate | Premium
+//  Branded Edition
+// ===============================
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local Window = Rayfield:CreateWindow({
-   Name = "NeoByte | Premium",
+--========================--
+--      KEY SYSTEM        --
+--========================--
+
+local CorrectKey = "NEOBYTE-ULTRA-2026"
+
+local KeyWindow = Rayfield:CreateWindow({
+   Name = "NeoByte | Key System",
    LoadingTitle = "NeoByte Premium",
-   LoadingSubtitle = "Speed Input Version",
+   LoadingSubtitle = "Authentication Required",
+   ConfigurationSaving = {Enabled = false},
+   KeySystem = true,
+   KeySettings = {
+      Title = "NeoByte Premium Access",
+      Subtitle = "Enter Your Key",
+      Note = "Contact Owner For Key",
+      FileName = "NeoByteKey",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {CorrectKey}
+   }
+})
+
+--========================--
+--      MAIN WINDOW       --
+--========================--
+
+local Window = Rayfield:CreateWindow({
+   Name = "💎 NeoByte Ultimate",
+   LoadingTitle = "NeoByte Ultimate",
+   LoadingSubtitle = "Premium Edition",
    ConfigurationSaving = {Enabled = false},
    KeySystem = false,
+})
+
+-- Theme Color (Purple Dark)
+Rayfield:Notify({
+   Title = "NeoByte",
+   Content = "Premium Access Granted 👑",
+   Duration = 4,
 })
 
 local Player = game.Players.LocalPlayer
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local Character = Player.Character or Player.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
@@ -21,24 +59,20 @@ local Root = Character:WaitForChild("HumanoidRootPart")
 local MainTab = Window:CreateTab("Main", 4483362458)
 
 --========================--
---        FLY SYSTEM      --
+--          FLY           --
 --========================--
 
 local Flying = false
-local FlySpeed = 1 -- DEFAULT 1
-local BV, BG
-local FlyConnection
+local FlySpeed = 1
+local BV, BG, FlyConnection
 
 local function StartFly()
-   Flying = true
-   
    BV = Instance.new("BodyVelocity")
    BV.MaxForce = Vector3.new(9e9,9e9,9e9)
    BV.Parent = Root
 
    BG = Instance.new("BodyGyro")
    BG.MaxTorque = Vector3.new(9e9,9e9,9e9)
-   BG.CFrame = Root.CFrame
    BG.Parent = Root
 
    FlyConnection = RunService.RenderStepped:Connect(function()
@@ -69,57 +103,37 @@ local function StartFly()
 end
 
 local function StopFly()
-   Flying = false
-   if FlyConnection then
-      FlyConnection:Disconnect()
-      FlyConnection = nil
-   end
+   if FlyConnection then FlyConnection:Disconnect() end
    if BV then BV:Destroy() end
    if BG then BG:Destroy() end
 end
 
 MainTab:CreateToggle({
-   Name = "Enable Fly",
+   Name = "✈ Enable Fly",
    CurrentValue = false,
    Callback = function(Value)
-      if Value then
-         StartFly()
-      else
-         StopFly()
-      end
+      if Value then StartFly() else StopFly() end
    end,
 })
 
--- INPUT SPEED
 MainTab:CreateInput({
    Name = "Fly Speed (Default 1)",
-   PlaceholderText = "Masukkan angka...",
+   PlaceholderText = "Enter Speed...",
    RemoveTextAfterFocusLost = false,
    Callback = function(Text)
       local Num = tonumber(Text)
       if Num and Num > 0 then
          FlySpeed = Num
-         Rayfield:Notify({
-            Title = "NeoByte",
-            Content = "Fly Speed set ke "..Num,
-            Duration = 3,
-         })
-      else
-         Rayfield:Notify({
-            Title = "Error",
-            Content = "Masukkan angka yang valid!",
-            Duration = 3,
-         })
       end
    end,
 })
 
 --========================--
---       ANTI AFK         --
+--        ANTI AFK        --
 --========================--
 
 MainTab:CreateButton({
-   Name = "Enable Anti AFK",
+   Name = "🛑 Enable Anti AFK",
    Callback = function()
       local VirtualUser = game:GetService("VirtualUser")
       Player.Idled:Connect(function()
@@ -127,15 +141,66 @@ MainTab:CreateButton({
          task.wait(1)
          VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
       end)
-      Rayfield:Notify({
-         Title = "NeoByte",
-         Content = "Anti AFK Activated!",
-         Duration = 4,
-      })
+   end,
+})
+
+--========================--
+--      TELEPORT SYS      --
+--========================--
+
+local SelectedPlayer = nil
+
+local function GetPlayersList()
+   local t = {}
+   for _, plr in pairs(game.Players:GetPlayers()) do
+      if plr ~= Player then
+         table.insert(t, plr.Name)
+      end
+   end
+   return t
+end
+
+local PlayerDropdown = MainTab:CreateDropdown({
+   Name = "👤 Select Player",
+   Options = GetPlayersList(),
+   CurrentOption = {},
+   MultipleOptions = false,
+   Callback = function(Option)
+      SelectedPlayer = Option[1]
+   end,
+})
+
+MainTab:CreateButton({
+   Name = "🚀 Smooth Teleport",
+   Callback = function()
+      if not SelectedPlayer then return end
+      local Target = game.Players:FindFirstChild(SelectedPlayer)
+      if not Target or not Target.Character then return end
+
+      local TargetRoot = Target.Character:FindFirstChild("HumanoidRootPart")
+      if not TargetRoot then return end
+
+      local tween = TweenService:Create(
+         Root,
+         TweenInfo.new(0.5, Enum.EasingStyle.Quad),
+         {CFrame = TargetRoot.CFrame * CFrame.new(0,0,-4)}
+      )
+      tween:Play()
+   end,
+})
+
+--========================--
+--       GOD MODE         --
+--========================--
+
+MainTab:CreateButton({
+   Name = "❤️ Full Heal",
+   Callback = function()
+      Humanoid.Health = Humanoid.MaxHealth
    end,
 })
 
 MainTab:CreateParagraph({
-   Title = "NeoByte Premium",
-   Content = "Fly + Anti AFK\nSpeed default 1\nWASD Move | Space Up | Ctrl Down",
+   Title = "💎 NeoByte Premium",
+   Content = "Ultimate Branded Edition\nFly | Teleport | Anti AFK\nNeo Studio 2026",
 })
