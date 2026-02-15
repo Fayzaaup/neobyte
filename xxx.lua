@@ -1,25 +1,21 @@
---// ===============================
-//  NeoByte Ultimate | Premium
-//  Branded Edition
-// ===============================
+--// NeoByte Ultimate | Fixed UI Version
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
---========================--
---      KEY SYSTEM        --
---========================--
-
 local CorrectKey = "NEOBYTE-ULTRA-2026"
 
-local KeyWindow = Rayfield:CreateWindow({
-   Name = "NeoByte | Key System",
-   LoadingTitle = "NeoByte Premium",
-   LoadingSubtitle = "Authentication Required",
-   ConfigurationSaving = {Enabled = false},
+local Window = Rayfield:CreateWindow({
+   Name = "💎 NeoByte Ultimate",
+   LoadingTitle = "NeoByte Ultimate",
+   LoadingSubtitle = "Premium Edition",
+   ConfigurationSaving = {
+      Enabled = true,
+      FileName = "NeoByteConfig"
+   },
    KeySystem = true,
    KeySettings = {
       Title = "NeoByte Premium Access",
-      Subtitle = "Enter Your Key",
+      Subtitle = "Enter Key Below",
       Note = "Contact Owner For Key",
       FileName = "NeoByteKey",
       SaveKey = true,
@@ -29,23 +25,8 @@ local KeyWindow = Rayfield:CreateWindow({
 })
 
 --========================--
---      MAIN WINDOW       --
+--        SERVICES        --
 --========================--
-
-local Window = Rayfield:CreateWindow({
-   Name = "💎 NeoByte Ultimate",
-   LoadingTitle = "NeoByte Ultimate",
-   LoadingSubtitle = "Premium Edition",
-   ConfigurationSaving = {Enabled = false},
-   KeySystem = false,
-})
-
--- Theme Color (Purple Dark)
-Rayfield:Notify({
-   Title = "NeoByte",
-   Content = "Premium Access Granted 👑",
-   Duration = 4,
-})
 
 local Player = game.Players.LocalPlayer
 local UIS = game:GetService("UserInputService")
@@ -62,7 +43,6 @@ local MainTab = Window:CreateTab("Main", 4483362458)
 --          FLY           --
 --========================--
 
-local Flying = false
 local FlySpeed = 1
 local BV, BG, FlyConnection
 
@@ -145,7 +125,7 @@ MainTab:CreateButton({
 })
 
 --========================--
---      TELEPORT SYS      --
+--       TELEPORT         --
 --========================--
 
 local SelectedPlayer = nil
@@ -182,25 +162,14 @@ MainTab:CreateButton({
 
       local tween = TweenService:Create(
          Root,
-         TweenInfo.new(0.5, Enum.EasingStyle.Quad),
+         TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
          {CFrame = TargetRoot.CFrame * CFrame.new(0,0,-4)}
       )
       tween:Play()
    end,
 })
 
---========================--
---       GOD MODE         --
---========================--
-
-MainTab:CreateButton({
-   Name = "❤️ Full Heal",
-   Callback = function()
-      Humanoid.Health = Humanoid.MaxHealth
-   end,
-})
-
 MainTab:CreateParagraph({
    Title = "💎 NeoByte Premium",
-   Content = "Ultimate Branded Edition\nFly | Teleport | Anti AFK\nNeo Studio 2026",
+   Content = "Fly | Teleport | Anti AFK\nFixed UI Version 2026",
 })
